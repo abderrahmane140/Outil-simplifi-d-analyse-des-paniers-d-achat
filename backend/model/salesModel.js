@@ -1,24 +1,28 @@
-const mongoose = require('mongoose')
+const mongoose = require('mongoose');
 
-const Schema = mongoose.Schema
+const Schema = mongoose.Schema;
 
 const salesSchema = new Schema({
-    SaleID:{
-        type: Number,
-        required:true
-    },
-    ProductID:{
-        type: Number,
-        required:true
-    },
-    Date:{
-        type: Date,
-        required:true
-    },
-    TotalAmount:{
-        type: Number,
-        required:true
-    }
-})
+  SaleID: {
+    type: Number,
+    required: true,
+  },
+  ProductID: {
+    type: Number,
+    required: true,
+  },
+  Quantity: {
+    type: Number,
+    required: true,
+  },
+  Date: {
+    type: Date,
+    required: true,
+  },
+  TotalAmount: {
+    type: Number,
+    required: true,
+  },
+});
 
-module.exports = mongoose.model('sales',salesSchema)
+module.exports = mongoose.model('Sales', salesSchema);
