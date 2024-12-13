@@ -43,14 +43,19 @@ Ce projet inclut à la fois le **backend** et le **frontend** d'une application 
 ## Instructions d'Installation
 
 ### 1. Clonez le dépôt
-
+```bash
 git clone https://github.com/abderrahmane140/Outil-simplifi-d-analyse-des-paniers-d-achat.git
+```
+
 
 ## 2. Configuration du Backend
 1. Allez dans le répertoire backend et installez les dépendances :
-
+```bash
 cd backend
+```
+```bash
 npm install
+```
 
 2. Configurez les variables d'environnement : Créez un fichier `.env` à la racine du répertoire backend avec vos paramètres d'environnement :
 
@@ -60,29 +65,38 @@ URL_API_FRONTEND = http://localhost:5173/  # L'URL de votre frontend (générale
 
 
 3. Démarrez le backend en mode développement :
-
+```bash
 npm run dev
-
+```
+    
 4. Pour la production, compilez les fichiers TypeScript et exécutez l'application :
-
+```bash
 npm run start
-
+```
+    
 Cette commande compile le code TypeScript en JavaScript et exécute les fichiers compilés depuis le dossier dist/.
 
 ## 3. Configuration du Frontend
 
 1. Allez dans le répertoire frontend et installez les dépendances :
-
+```bash
 cd frontend
+```
+```bash
 npm install
+```
 
 2. Démarrez le frontend en mode développement :
-
+```bash
 npm run dev
+```
 
 ## Points de terminaison API
 
 GET /analytics/total_sales : Retourne le montant total des ventes pour la période sélectionnée.
+
 GET /analytics/trending_products : Retourne une liste des 3 produits les plus vendus, avec nom, quantité vendue, et montant total des ventes.
+
 GET /analytics/category_sales : Retourne la répartition des ventes par catégorie, incluant le nombre et le pourcentage des ventes.
+
 GET /products : Retourne un tableau des produits avec leur nombre de ventes pour chaque produit.
