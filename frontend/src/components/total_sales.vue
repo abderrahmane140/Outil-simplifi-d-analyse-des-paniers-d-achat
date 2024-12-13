@@ -4,15 +4,23 @@ import flatpickr from "flatpickr";
 import "flatpickr/dist/flatpickr.min.css";
 
 const dateRange = ref("");
+const props = defineProps({
+  dateRange: {
+    type: Object,
+    required: true,
+  },
+});
 const dateObject = reactive({
-  startDate: "",
-  endDate: "",
+  startDate: props.dateRange.startDate,
+  endDate: props.dateRange.endDate,
 });
 let datePickerInstance = null;
 const data = ref([]);
 const loading = ref(false);
 const error = ref(null);
 const apiURl = ref(import.meta.env.VITE_API_URL);
+
+
 
 const fetchData = async () => {
   loading.value = true;
@@ -63,13 +71,23 @@ onMounted(() => {
   fetchData(); // Fetch initial data when the component is mounted
 });
 
-// Watch for changes in `dateObject` and fetch data
+watch(
+  () => props.dateRange,
+  (newRange) => {
+    dateObject.startDate = newRange.startDate;
+    dateObject.endDate = newRange.endDate;
+    fetchData(); // Re-fetch data whenever the dateRange prop changes
+  },
+  { deep: true } // Watch the dateRange deeply
+);
+
+// Watch for changes in dateObject and fetch data
 watch(
   () => dateObject,
   () => {
     fetchData();
   },
-  { deep: true }
+  { deep: true } // Deep watch to detect nested changes
 );
 
 // Open the date picker programmatically
@@ -78,6 +96,10 @@ const openDatePicker = () => {
     datePickerInstance.open();
   }
 };
+
+
+console.log("dataRange: ",props.dateRange);
+
 </script>
 
 <template>
@@ -104,6 +126,8 @@ const openDatePicker = () => {
     </div>
   </div>
   <div class="mt-10">
-    <p class="font-bold text-2xl">{{data.totalSales}}$</p>
+    <p v-if="loading" class="h-2.5 bg-gray-200 rounded-full dark:bg-gray-200 w-20 mb-4"></p>
+    <p v-else-if="error" class="text-red-500">{{ error }}</p>
+    <p v-else class="font-bold text-2xl">{{data.totalSales}}$</p>
   </div>
 </template>
