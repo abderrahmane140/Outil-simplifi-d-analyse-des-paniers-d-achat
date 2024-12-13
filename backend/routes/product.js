@@ -5,6 +5,6 @@ const getProductsWithSales = require('../controller/products')
 const router = express.Router();
 
 //get all products
-router.get('/',getProductsWithSales)
+router.post('/',getProductsWithSales)
 
 module.exports = router

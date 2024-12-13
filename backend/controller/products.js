@@ -1,41 +1,57 @@
 const Product = require('../model/productModel');
 const Sales = require('../model/salesModel');
 
-// Récupérer les produits avec leur nombre de ventes
 const getProductsWithSales = async (req, res) => {
+  const { startDate, endDate } = req.body;
+
+  if (!startDate || !endDate) {
+    return res.status(400).json({ message: 'startDate and endDate are required' });
+  }
+
+  const start = new Date(startDate);
+  const end = new Date(endDate);
+
+  if (isNaN(start) || isNaN(end)) {
+    return res.status(400).json({ message: 'Invalid date format' });
+  }
+
   try {
-    const productsWithSales = await Product.aggregate([
+    // Step 1: Filter sales upfront
+    const salesData = await Sales.aggregate([
       {
-        $lookup: {
-          from: 'sales', // Collection des ventes (nom en minuscules et au pluriel par convention MongoDB)
-          localField: 'ProductID',
-          foreignField: 'ProductID',
-          as: 'salesData',
+        $match: {
+          Date: { $gte: start, $lte: end },
         },
       },
       {
-        $limit: 20
-      },
-      {
-        $addFields: {
-          totalQuantity: { $sum: '$salesData.Quantity' },
-        },
-      },
-      {
-        $project: {
-          ProductID: 1,
-          ProductName: 1,
-          Category: 1,
-          Price: 1,
-          totalQuantity: 1,
+        $group: {
+          _id: '$ProductID',
+          totalQuantity: { $sum: '$Quantity' },
         },
       },
     ]);
 
+    // Step 2: Map sales data for quick access
+    const salesMap = salesData.reduce((acc, sale) => {
+      acc[sale._id] = sale.totalQuantity;
+      return acc;
+    }, {});
+
+    // Step 3: Fetch products and append sales data
+    const products = await Product.find({}).limit(20).lean();
+
+    const productsWithSales = products.map((product) => ({
+      ProductID: product.ProductID,
+      ProductName: product.ProductName,
+      Category: product.Category,
+      Price: product.Price,
+      totalQuantity: salesMap[product.ProductID] || 0, // Default to 0 if no sales
+    }));
+
     res.status(200).json(productsWithSales);
   } catch (err) {
-    console.error('Erreur lors de la récupération des produits avec ventes:', err);
-    res.status(500).json({ error: 'Erreur interne du serveur' });
+    console.error('Error retrieving products with sales:', err);
+    res.status(500).json({ error: 'Internal server error' });
   }
 };
 

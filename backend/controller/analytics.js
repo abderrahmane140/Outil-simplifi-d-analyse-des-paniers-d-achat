@@ -54,9 +54,26 @@ const getSales = async (req,res) => {
 }
 
 const getTrendingProducts = async (req, res) => {
+  const { startDate, endDate } = req.body;
+
+  if (!startDate || !endDate) {
+    return res.status(400).json({ message: 'startDate and endDate are required' });
+  }
+  const start = new Date(startDate);
+  const end = new Date(endDate);
+
+  if (isNaN(start) || isNaN(end)) {
+    return res.status(400).json({ message: 'Invalid date format' });
+  }
+  
   try {
     const trendingProducts = await Sales.aggregate([
       // Group by ProductID to calculate total quantity and total sales
+      {
+        $match: {
+          Date: { $gte: start, $lte: end },
+        }
+      },
       {
         $group: {
           _id: '$ProductID',
@@ -120,39 +137,63 @@ const getTrendingProducts = async (req, res) => {
 
 
 const getCategorySales = async (req, res) => {
+  const {startDate, endDate } = req.body;
+  
+  if (!startDate || !endDate) {
+    return res.status(400).json({ message: 'startDate and endDate are required' });
+  }
+
+  
+  const start = new Date(startDate);
+  const end = new Date(endDate);
+
+  // Ensure valid date range
+  if (isNaN(start) || isNaN(end)) {
+    return res.status(400).json({ message: 'Invalid date format' });
+  }
   try {
-    console.log("the aggregaye start now",Date())
+    console.log("The aggregation starts now", Date());
+
+    // Add match to filter data before performing $lookup
     const categorySales = await Sales.aggregate([
-      
+      // Example: Match to filter sales data
+      {
+        $match: {
+          Date: { $gte: start, $lte: end },
+        },
+      },
+
       // Lookup to join sales with products collection
       {
         $lookup: {
-          from: 'products', // Name of the products collection
-          localField: 'ProductID', // ProductID in sales
-          foreignField: 'ProductID', // ProductID in products
+          from: 'products',
+          localField: 'ProductID',
+          foreignField: 'ProductID',
           as: 'productDetails',
         },
       },
-      // Unwind to flatten the product details array
+
+      // Add fields for product details (use addFields instead of unwind if possible)
       {
-        $unwind: {
-          path: '$productDetails',
-          preserveNullAndEmptyArrays: false,
+        $addFields: {
+          productDetails: { $arrayElemAt: ["$productDetails", 0] }, // Avoid unwind
         },
       },
-      // Group by category and calculate total sales and total quantity
+
+      // Group by category and calculate total sales and quantity
       {
         $group: {
-          _id: '$productDetails.Category', // Group by category
-          totalSales: { $sum: '$TotalAmount' }, // Sum of TotalAmount
-          totalQuantity: { $sum: '$Quantity' }, // Sum of Quantity
-          count: { $sum: 1 }, // Number of sales
+          _id: '$productDetails.Category',
+          totalSales: { $sum: '$TotalAmount' },
+          totalQuantity: { $sum: '$Quantity' },
+          count: { $sum: 1 },
         },
       },
-      // Calculate the overall total sales to compute percentages
+
+      // Calculate total sales overall for percentage calculation
       {
         $group: {
-          _id: null, // Temporary group to calculate total sales
+          _id: null,
           categories: {
             $push: {
               category: '$_id',
@@ -161,10 +202,11 @@ const getCategorySales = async (req, res) => {
               count: '$count',
             },
           },
-          totalSalesOverall: { $sum: '$totalSales' }, // Total sales across all categories
+          totalSalesOverall: { $sum: '$totalSales' },
         },
       },
-      // Unwind the categories to calculate percentage and finalize output
+
+      // Unwind categories and calculate percentage
       {
         $unwind: '$categories',
       },
@@ -183,18 +225,21 @@ const getCategorySales = async (req, res) => {
           },
         },
       },
+
       // Sort categories by total sales in descending order
       {
         $sort: { totalSales: -1 },
       },
     ]);
-    console.log("the aggregaye end now",Date())
+
+    console.log("The aggregation ends now", Date());
     res.status(200).json({ categorySales });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Server error' });
   }
 };
+
 
 
 

@@ -5,8 +5,8 @@ const {getTotalSales, getSales, getTrendingProducts, getCategorySales }= require
 const router = express.Router();
 
 router.post('/total_sales',getTotalSales)
-router.get('/trending_products',getTrendingProducts)
-router.get('/category_sales',getCategorySales)
+router.post('/trending_products',getTrendingProducts)
+router.post('/category_sales',getCategorySales)
 router.get('/',getSales)
 
 module.exports = router;
