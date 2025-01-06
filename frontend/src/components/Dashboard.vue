@@ -23,13 +23,15 @@ const calculatedRange = computed(() => {
     endDate: today.toISOString().split('T')[0], // Format as YYYY-MM-DD
   };
 });
+
+
 </script>
 
 <template>
   <div class="min-h-full flex flex-col bg-neutral-100">
     <!-- Header Section -->
     <header class="bg-gray-800">
-      <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <div class="mx-auto  px-4 sm:px-6 lg:px-8">
         <div class="flex h-16 items-center justify-between">
           <div class="shrink-0">
             <h1 class="text-white font-bold text-xl">Dashboard</h1>
